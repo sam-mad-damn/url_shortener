@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container">
+      <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <h1 class="text-center">Добро пожаловать в Сокращатель ссылок</h1>
+            </div>
+            {% if session["auth"]==True:%}
+            <div class="card-body">
+              <p>Вы авторизованы. Все нужные вам данные находятся в вашем профиле!</p>
+              <a href="/profile" class="btn btn-primary mt-3">Перейти в профиль</a>
+            </div>
+            {% else:%}
+            <div class="card-body">
+              <p>Пожалуйста, войдите или зарегистрируйтесь для дальнейшей работы.</p>
+              <a href="/login" class="btn btn-primary mt-3">Вход</a>
+              <a href="/register" class="btn btn-secondary mt-3">Регистрация</a>
+            </div>
+            {% endif%}
+          </div>
+        </div>
+      </div>
+  </div>
+{% endblock %}
