@@ -30,6 +30,7 @@ def login():
             # проверяем пароли и если совпадают то авторизуем пользователя
             if user_pass != False and bcrypt.check_password_hash(user_pass[0],password):
                 authorization(con.cursor(), login, password)
+                session["user_id"]=get_user_id(con.cursor(),login)
                 session["auth"] = True
                 # отправляем на страницу профиля
                 return redirect(f"http://127.0.0.1:5000/profile")
@@ -63,6 +64,8 @@ def register():
 @app.route('/profile')
 def profile():
     if "auth" in session:
+        con = sqlite3.connect(r"db.db")
+        get_users_links(con.cursor(),session["user_id"])
         return render_template("profile.html", auth=session["auth"])
     else:
         return redirect(f'http://127.0.0.1:5000/login')

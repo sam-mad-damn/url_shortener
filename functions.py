@@ -36,3 +36,23 @@ def find_user(cursor, login, password):
     else:
         return False
 
+def get_user_id(cursor,login):
+    return cursor.execute('''SELECT id FROM users WHERE login=?;''', ([login,])).fetchone()
+
+#функция добавления ссылки
+def add_link(connection, long, short):
+    connection.cursor().execute('''INSERT INTO links(long,short) VALUES(?,?)''',([long,short,]))
+    connection.commit()
+    connection.close()
+
+# функция добавления ссылки пользователя
+def add_user_link(connection, user_id, link_id, access_lvl):
+    connection.cursor().execute('''INSERT INTO users_links(user_id,link_id,access_lvl) VALUES(?,?,?)''',
+                                ([user_id, link_id, access_lvl]))
+    connection.commit()
+    connection.close()
+
+
+# функция получения списка ссылок пользователя
+def get_users_links(cursor,user_id):
+    print(cursor.execute('''SELECT * FROM links WHERE users_links.user_id=?;''',([user_id])).fetchall())
