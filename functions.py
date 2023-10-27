@@ -27,7 +27,6 @@ def add_user(connection,login, password):
     connection.cursor().execute(
         '''INSERT INTO users(login,password) VALUES (?,?) ;''', ([login, password]))
     connection.commit()
-    connection.close()
 
 # функция получения id пользователя
 def find_user(cursor, login, password):
@@ -40,8 +39,8 @@ def get_user_id(cursor,login):
     return cursor.execute('''SELECT id FROM users WHERE login=?;''', ([login,])).fetchone()
 
 #функция добавления ссылки
-def add_link(connection, long, short):
-    connection.cursor().execute('''INSERT INTO links(long,short) VALUES(?,?)''',([long,short,]))
+def add_link(connection, long, short, count=0):
+    connection.cursor().execute('''INSERT INTO links(long,short,count) VALUES(?,?,?)''',([long, short, count]))
     connection.commit()
     connection.close()
 
@@ -55,4 +54,4 @@ def add_user_link(connection, user_id, link_id, access_lvl):
 
 # функция получения списка ссылок пользователя
 def get_users_links(cursor,user_id):
-    print(cursor.execute('''SELECT * FROM links WHERE users_links.user_id=?;''',([user_id])).fetchall())
+    cursor.execute('''SELECT * FROM links WHERE links.id=users_links.link_id AND users_links.user_id=?;''',([user_id])).fetchall()

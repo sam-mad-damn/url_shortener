@@ -14,7 +14,7 @@ cursor.execute(
 
 # создаем таблицу links в базе, если она еще не существует
 cursor.execute(
-    '''CREATE TABLE IF NOT EXISTS "links"(id INTEGER PRIMARY KEY AUTOINCREMENT,long TEXT NOT NULL, short TEXT NOT NULL,count INT NOT NULL);''')
+    '''CREATE TABLE IF NOT EXISTS "links"(id INTEGER PRIMARY KEY AUTOINCREMENT,long TEXT NOT NULL, short TEXT NOT NULL, count INT NOT NULL);''')
 
 # создаем таблицу уровни доступа в базе, если она еще не существует
 cursor.execute(

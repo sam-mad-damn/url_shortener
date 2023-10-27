@@ -20,7 +20,6 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
         if request.method == 'POST':
-
             con=sqlite3.connect(r"db.db")
             # ловим введенные данные пользователя
             login = request.form['login']
@@ -51,6 +50,7 @@ def register():
         hashed_pass = bcrypt.generate_password_hash(password).decode("utf-8")
         # регистрируем пользователя, если он еще не зарегистрирован, то
         if registration(con, login, hashed_pass):
+            session["user_id"] = get_user_id(con.cursor(), login)
             session["auth"]=True
             # переносим на страницу профиля
             return redirect(f'http://127.0.0.1:5000/profile')
@@ -65,7 +65,7 @@ def register():
 def profile():
     if "auth" in session:
         con = sqlite3.connect(r"db.db")
-        get_users_links(con.cursor(),session["user_id"])
+        # get_users_links(con.cursor(), session["user_id"])
         return render_template("profile.html", auth=session["auth"])
     else:
         return redirect(f'http://127.0.0.1:5000/login')
