@@ -81,7 +81,7 @@ def profile():
                 access_lvl = request.form['access_lvl']
                 nickname = request.form['nickname']
                 if nickname == "none":
-                    shortname = hashlib.md5(link.encode()).hexdigest()[:random.randint(1,12)]
+                    shortname = hashlib.md5(link.encode()).hexdigest()[:random.randint(8,12)]
                     short=request.host_url+shortname
                 else:
                     shortname = nickname
@@ -95,14 +95,35 @@ def profile():
 
 @app.route('/<short>')
 def go(short):
-    if "auth" in session:
-        # подключаемся к базе данных
-        con = sqlite3.connect(r"db.db")
-        # ищем в базе ссылку по короткому имени
-        finded_link=find_link_by_shortname(con,short,session["user_id"])
-        if finded_link != None:
+    # подключаемся к базе данных
+    con = sqlite3.connect(r"db.db")
+    # ищем в базе ссылку по короткому имени
+    print(short)
+    print(session["user_id"])
+    finded_link=find_link_by_shortname(con,short)
+    access_lvl=finded_link[6]
+    if finded_link != None:
+        if access_lvl==0:
+            # изменение кол-ва переходов по ссылке
             change_count_link(con,finded_link[4]+1,finded_link[0])
-        return redirect(finded_link[1])
+            return redirect(finded_link[1])
+        elif access_lvl==1:
+            if "auth" in session:
+                # изменение кол-ва переходов по ссылке
+                change_count_link(con, finded_link[4] + 1, finded_link[0])
+                return redirect(finded_link[1])
+            else:
+                err = "У вас нет доступа к ссылке"
+                return render_template('index.html', err=err)
+        elif access_lvl==2:
+            if str(session["user_id"])==finded_link[5]:
+                # изменение кол-ва переходов по ссылке
+                change_count_link(con, finded_link[4] + 1, finded_link[0])
+                return redirect(finded_link[1])
+            else:
+                err="У вас нет доступа к ссылке"
+                return render_template('index.html',err=err)
+
 
 @app.route('/change_link', methods=['GET', 'POST'])
 def change_link():
@@ -111,7 +132,7 @@ def change_link():
         if request.method == 'POST':
             link_id=session["finded_link"][0]
             if "del_nickname" in request.form:
-                shortname = hashlib.md5(session["finded_link"][2].encode()).hexdigest()[:random.randint(1,12)]
+                shortname = hashlib.md5(session["finded_link"][2].encode()).hexdigest()[:random.randint(8,12)]
                 short = request.host_url + shortname
                 change_shortname_link(con, shortname, short, link_id)
                 return redirect(f'http://127.0.0.1:5000/profile')

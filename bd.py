@@ -10,7 +10,7 @@ cursor = con.cursor()
 # создали таблицу users в базе, если она еще не существует
 cursor.execute(
     '''CREATE TABLE IF NOT EXISTS "users" ("id" INTEGER NOT NULL,"login" TEXT NOT NULL,"password" TEXT NOT NULL,primary key("id" AUTOINCREMENT));''')
-# cursor.execute('''DROP TABLE users_links''')
+# cursor.execute('''DROP TABLE users''')
 
 # создаем таблицу links в базе, если она еще не существует
 cursor.execute(

@@ -10,6 +10,7 @@
             </div>
             {% if session["auth"]==True:%}
             <div class="card-body">
+              <p class="err">{{err}}</p>
               <p>Вы авторизованы. Все нужные вам данные находятся в вашем профиле!</p>
               <a href="/profile" class="btn btn-primary mt-3">Перейти в профиль</a>
             </div>
@@ -24,4 +25,10 @@
         </div>
       </div>
   </div>
+<style>
+  .err{
+    color: firebrick;
+      font-size: 23px;
+  }
+</style>
 {% endblock %}
