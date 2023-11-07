@@ -1,0 +1,158 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  <div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="text-center">Редактирование ссылки</h3>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            <div class="mb-3">
+              <label>Длинная сылка:</label>
+              <input
+                class="form-control"
+                disabled
+                value="{{session['finded_link'][1]}}"
+              />
+            </div>
+            <div class="mb-3">
+              <label>Сокращенная ссылка:</label>
+              <input
+                class="form-control"
+                disabled
+                value="{{session['finded_link'][3]}}"
+              />
+            </div>
+            <div class="mb-3">
+              <label>Уровень доступа:</label>
+              <input
+                class="form-control"
+                disabled
+                value="{{session['finded_link'][7]}}"
+              />
+            </div>
+            <div class="mb-3">
+              <label>Псевдоним:</label>
+              <input
+                class="form-control"
+                disabled
+                value="{{session['finded_link'][2]}}"
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-check-label"
+                >Изменить уровень доступа ссылки:<input
+                  class="form-check-input"
+                  id="change_access_lvl"
+                  type="checkbox"
+                  name="change_access_lvl" /></label
+              ><br />
+              <div class="mb-3" id="access_lvl_block">
+                <label>Выберите уровень доступа:</label>
+                <select id="access_lvl" name="access_lvl" class="form-control">
+                  {% for lvl in session["access_lvls"]:%}
+                  <option value="{{ lvl[1] }}">{{ lvl[2] }}</option>
+                  {% endfor%}
+                </select>
+              </div>
+              <div id="change_nickname_block">
+                <label class="form-check-label"
+                  >Изменить псевдоним для ссылки:<input
+                    class="form-check-input"
+                    id="change_nickname"
+                    type="checkbox"
+                    name="change_nickname"
+                /></label>
+                <br />
+              </div>
+              <div class="mb-3" id="nicknameblock">
+                <label>Введите желаемый псевдоним:</label>
+                <input
+                  value="none"
+                  name="nickname"
+                  class="form-control"
+                  id="nicknameinp"
+                  type="text"
+                />
+              </div>
+              <div id="del_nickname_block">
+                <label class="form-check-label"
+                  >Удалить псевдоним ссылки:<input
+                    class="form-check-input"
+                    id="del_nickname"
+                    type="checkbox"
+                    name="del_nickname"
+                /></label>
+              </div>
+            </div>
+
+            <div class="text-center">
+              <button type="submit" class="btn btn-primary">Сохранить</button>
+              <button class="btn btn-secondary">
+                <a href="/profile">Отмена</a>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  // отработка показа и скрытия редактирования псевдонима
+  let inp = document.querySelector("#nicknameinp");
+  document.querySelector("#nicknameblock").style.display = "none";
+  document.querySelector("#change_nickname").addEventListener(
+    "change",
+    (event) => {
+      inp.disabled = !event.target.checked;
+      if (event.target.checked) {
+        document.querySelector("#nicknameblock").style.display = "block";
+        inp.value = "";
+        document.querySelector("#del_nickname_block").style.display = "none";
+      } else {
+        document.querySelector("#nicknameblock").style.display = "none";
+        document.querySelector("#del_nickname_block").style.display = "block";
+      }
+    },
+    false
+  );
+  document.querySelector("#del_nickname_block").addEventListener(
+    "change",
+    (event) => {
+      inp.disabled = !event.target.checked;
+      if (event.target.checked) {
+        document.querySelector("#change_nickname_block").style.display = "none";
+      } else {
+        document.querySelector("#change_nickname_block").style.display =
+          "block";
+      }
+    },
+    false
+  );
+  // отработка показа и скрытия редактирования уровня доступа
+  document.querySelector("#access_lvl_block").style.display = "none";
+  document.querySelector("#change_access_lvl").addEventListener(
+    "change",
+    (event) => {
+      document.querySelector("#access_lvl").disabled = !event.target.checked;
+      if (event.target.checked) {
+        document.querySelector("#access_lvl_block").style.display = "block";
+      } else {
+        document.querySelector("#access_lvl_block").style.display = "none";
+      }
+    },
+    false
+  );
+</script>
+<style>
+  a {
+    color: white;
+    text-decoration: none;
+  }
+  a:hover {
+    color: white;
+  }
+</style>
+{% endblock %}
