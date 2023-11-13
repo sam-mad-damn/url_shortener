@@ -6,7 +6,7 @@
      <div class="col-md-6">
         <div class="card">
           <div class="card-header">
-            <h1 class="text-center">Вход </h1>
+            <h1 class="text-center">Авторизуйтесь перед переходом по ссылке </h1>
           </div>
           <div class="card-body">
             <form method="post">
@@ -24,18 +24,7 @@
             </form>
           </div>
         </div>
-      <a href="/register">У меня еще нет профиля. Зарегистрироваться!</a>
-       <p class="err">{{err}}</p>
-        {% if 'error' in session:%}
-       <p class="err">{{session['error']}}</p>
-       {% endif %}
       </div>
     </div>
   </div>
-  <style>
-    .err{
-      color: firebrick;
-      font-size: 20px;
-    }
-  </style>
 {% endblock %}

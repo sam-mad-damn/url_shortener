@@ -1,8 +1,8 @@
-from flask import Flask, request, redirect, jsonify, render_template,  flash, session
+from flask import Flask, request, redirect, render_template,  session
 from bd import *
 import os
 from functions import *
-import sqlite3, uuid,  random
+import sqlite3,  random
 from flask_bcrypt import Bcrypt
 import hashlib
 
@@ -35,8 +35,35 @@ def login():
                 return redirect(f"http://127.0.0.1:5000/profile")
             # если не удалось авторизоваться, то
             else:
+                session.pop("error")
                 return render_template('login.html', err="Не удалось войти. Неправильный логин или пароль")
         return render_template('login.html')
+
+@app.route('/login_link/<link>', methods=['GET', 'POST'])
+def login_link(link):
+        if request.method == 'POST':
+            con=sqlite3.connect(r"db.db")
+            # ловим введенные данные пользователя
+            login = request.form['login']
+            password = request.form['password']
+            # берем из базы хэшированный пароль пользователя
+            user_pass=get_pass(con.cursor(), login)
+            # проверяем пароли и если совпадают то авторизуем пользователя
+            if user_pass != False and bcrypt.check_password_hash(user_pass[0],password):
+                authorization(con.cursor(), login, password)
+                session["user_id"]=get_user_id(con.cursor(),login)[0]
+                session["auth"] = True
+                # отправляем на страницу профиля
+                session["access_lvls"]=get_access_lvls(con)
+                if str(session["user_id"])==session['link'][5]:
+                    return redirect(f"{session['link'][1]}")
+                else:
+                    session["error"]="У вас нет доступа к ссылке"
+                    return redirect('/login')
+            # если не удалось авторизоваться, то
+            else:
+                return render_template('login.html', err="Не удалось войти. Неправильный логин или пароль")
+        return render_template('login_link.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -121,13 +148,17 @@ def go(short):
                 err = "У вас нет доступа к ссылке"
                 return render_template('index.html', err=err)
         elif access_lvl==2:
-            if str(session["user_id"])==finded_link[5]:
+            if "auth" in session:
+                if str(session["user_id"])==finded_link[5]:
                 # изменение кол-ва переходов по ссылке
-                change_count_link(con, finded_link[4] + 1, finded_link[0])
-                return redirect(finded_link[1])
+                    change_count_link(con, finded_link[4] + 1, finded_link[0])
+                    return redirect(finded_link[1])
+                else:
+                    err = "У вас нет доступа к этой ссылке"
+                    return render_template('index.html', err=err)
             else:
-                err="У вас нет доступа к ссылке"
-                return render_template('index.html',err=err)
+                session["link"]=finded_link
+                return redirect(f'/login_link/<link>')
 
 
 @app.route('/change_link', methods=['GET', 'POST'])
