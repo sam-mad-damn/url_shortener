@@ -13,6 +13,7 @@
             <div class="mb-3">
               <h3>Создание ссылки</h3>
             </div>
+            <p class="err">{{err}}</p>
             <div class="mb-3">
               <label>Вставьте ссылку:</label>
               <input required name="link" class="form-control" type="text" />
@@ -85,6 +86,7 @@
                   >
                     Изменить
                   </button>
+                </form>
               </td>
               <td>
                   <button
@@ -111,6 +113,12 @@
     </div>
   </div>
 </div>
+<style>
+    .err{
+      color: firebrick;
+      font-size: 23px;
+    }
+  </style>
 <script>
   let inp = document.querySelector("#nicknameinp");
   document.querySelector("#nicknameblock").style.display = "none";

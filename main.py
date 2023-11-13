@@ -66,30 +66,37 @@ def register():
 def profile():
     if "auth" in session:
         con = sqlite3.connect(r"db.db")
-        # get_users_links(con.cursor(), session["user_id"])
+        err = " "
         if request.method == 'POST':
+            # если юзер нажал кнопку Удалить
             if "del_link" in request.form:
                 del_link(con, request.form["id_link"])
+            #     если юзер нажал кнопку Изменить
             elif "change_link" in request.form:
+                # находим ссылку, которую юзер хочет изменить
                 session["finded_link"]=find_link_by_id(con, request.form["id_link"])
-                print(session["finded_link"])
+                # перенаправляем на страницу изменения
                 return redirect(f"http://127.0.0.1:5000/change_link")
-                # изменение кол-ва переходов
-                # change_link(con, finded_link[4] + 1, request.form["id_link"])
+            # если юзер работает с формой Создания ссылки
             else:
                 link = request.form['link']
                 access_lvl = request.form['access_lvl']
                 nickname = request.form['nickname']
+                # если никнейм не задан, то генерируем его сами
                 if nickname == "none":
                     shortname = hashlib.md5(link.encode()).hexdigest()[:random.randint(8,12)]
                     short=request.host_url+shortname
+                # если никнейм задан
                 else:
                     shortname = nickname
                     short=request.host_url+shortname
+                # добавляем ссылку
                 added_link = add_link(con, link, access_lvl, shortname, short, user_id=session["user_id"])
-                print(added_link)
+                # если ссылка не добавилась, то
+                if added_link==False:
+                    err="Уже есть ссылка с таким псевдонимом"
         session["users_links"]=get_users_links(con.cursor(),session["user_id"])
-        return render_template("profile.html", auth=session["auth"])
+        return render_template("profile.html", auth=session["auth"], err=err)
     else:
         return redirect(f'http://127.0.0.1:5000/login')
 
@@ -98,8 +105,6 @@ def go(short):
     # подключаемся к базе данных
     con = sqlite3.connect(r"db.db")
     # ищем в базе ссылку по короткому имени
-    print(short)
-    print(session["user_id"])
     finded_link=find_link_by_shortname(con,short)
     access_lvl=finded_link[6]
     if finded_link != None:

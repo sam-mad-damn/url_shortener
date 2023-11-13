@@ -40,10 +40,13 @@ def get_user_id(cursor,login):
 
 #функция добавления ссылки
 def add_link(connection, long, access_lvl, shortname, short, count=0, user_id=0):
-    access_lvl_name=find_access_lvl(connection,access_lvl)[0]
-    connection.cursor().execute('''INSERT INTO links(long,shortname,short,count,user_id,access_lvl, access_lvl_name) VALUES(?,?,?,?,?,?,?)''',([long, shortname, short, count, user_id, access_lvl,access_lvl_name,]))
-    connection.commit()
-    return find_link_by_short(connection,short,user_id)
+    if find_link_by_shortname(connection,shortname)==None:
+        access_lvl_name=find_access_lvl(connection,access_lvl)[0]
+        connection.cursor().execute('''INSERT INTO links(long,shortname,short,count,user_id,access_lvl, access_lvl_name) VALUES(?,?,?,?,?,?,?)''',([long, shortname, short, count, user_id, access_lvl,access_lvl_name,]))
+        connection.commit()
+        return find_link_by_short(connection,short,user_id)
+    else:
+        return False
 
 #функция удаление ссылки
 def del_link(connection, id):
