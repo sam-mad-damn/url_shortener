@@ -35,7 +35,8 @@ def login():
                 return redirect(f"http://127.0.0.1:5000/profile")
             # если не удалось авторизоваться, то
             else:
-                session.pop("error")
+                if "error" in session:
+                    session.pop("error")
                 return render_template('login.html', err="Не удалось войти. Неправильный логин или пароль")
         return render_template('login.html')
 
@@ -55,7 +56,9 @@ def login_link(link):
                 session["auth"] = True
                 # отправляем на страницу профиля
                 session["access_lvls"]=get_access_lvls(con)
-                if str(session["user_id"])==session['link'][5]:
+                if str(session["user_id"])==session['link'][5] and session['link'][6]==2:
+                    return redirect(f"{session['link'][1]}")
+                elif session['link'][6]==1:
                     return redirect(f"{session['link'][1]}")
                 else:
                     session["error"]="У вас нет доступа к ссылке"
@@ -145,8 +148,10 @@ def go(short):
                 change_count_link(con, finded_link[4] + 1, finded_link[0])
                 return redirect(finded_link[1])
             else:
-                err = "У вас нет доступа к ссылке"
-                return render_template('index.html', err=err)
+                # err = "У вас нет доступа к ссылке"
+                # return render_template('index.html', err=err)
+                session["link"] = finded_link
+                return redirect(f'/login_link/<link>')
         elif access_lvl==2:
             if "auth" in session:
                 if str(session["user_id"])==finded_link[5]:
