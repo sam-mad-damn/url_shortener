@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template,  session
+from flask import Flask, request, redirect, render_template,  session, abort
 from bd import *
 import os
 from functions import *
@@ -27,7 +27,7 @@ def login():
             user_pass=get_pass(con.cursor(), login)
             # проверяем пароли и если совпадают то авторизуем пользователя
             if user_pass != False and bcrypt.check_password_hash(user_pass[0],password):
-                authorization(con.cursor(), login, password)
+
                 session["user_id"]=get_user_id(con.cursor(),login)[0]
                 session["auth"] = True
                 # отправляем на страницу профиля
@@ -120,11 +120,15 @@ def profile():
                 else:
                     shortname = nickname
                     short=request.host_url+shortname
-                # добавляем ссылку
-                added_link = add_link(con, link, access_lvl, shortname, short, user_id=session["user_id"])
-                # если ссылка не добавилась, то
-                if added_link==False:
-                    err="Уже есть ссылка с таким псевдонимом"
+                long_link=find_link_by_long(con,link,session["user_id"])
+                if long_link !=None:
+                    err = "Вы уже сокращали эту ссылку"
+                else:
+                    # добавляем ссылку
+                    added_link = add_link(con, link, access_lvl, shortname, short, user_id=session["user_id"])
+                    # если ссылка не добавилась, то
+                    if added_link==False:
+                        err="Уже есть ссылка с таким псевдонимом"
         session["users_links"]=get_users_links(con.cursor(),session["user_id"])
         return render_template("profile.html", auth=session["auth"], err=err)
     else:
@@ -136,34 +140,37 @@ def go(short):
     con = sqlite3.connect(r"db.db")
     # ищем в базе ссылку по короткому имени
     finded_link=find_link_by_shortname(con,short)
-    access_lvl=finded_link[6]
-    if finded_link != None:
-        if access_lvl==0:
-            # изменение кол-ва переходов по ссылке
-            change_count_link(con,finded_link[4]+1,finded_link[0])
-            return redirect(finded_link[1])
-        elif access_lvl==1:
-            if "auth" in session:
+    if finded_link == None:
+        abort(404)
+    else:
+        access_lvl=finded_link[6]
+        if finded_link != None:
+            if access_lvl==0:
                 # изменение кол-ва переходов по ссылке
-                change_count_link(con, finded_link[4] + 1, finded_link[0])
+                change_count_link(con,finded_link[4]+1,finded_link[0])
                 return redirect(finded_link[1])
-            else:
-                # err = "У вас нет доступа к ссылке"
-                # return render_template('index.html', err=err)
-                session["link"] = finded_link
-                return redirect(f'/login_link/<link>')
-        elif access_lvl==2:
-            if "auth" in session:
-                if str(session["user_id"])==finded_link[5]:
-                # изменение кол-ва переходов по ссылке
+            elif access_lvl==1:
+                if "auth" in session:
+                    # изменение кол-ва переходов по ссылке
                     change_count_link(con, finded_link[4] + 1, finded_link[0])
                     return redirect(finded_link[1])
                 else:
-                    err = "У вас нет доступа к этой ссылке"
-                    return render_template('index.html', err=err)
-            else:
-                session["link"]=finded_link
-                return redirect(f'/login_link/<link>')
+                    # err = "У вас нет доступа к ссылке"
+                    # return render_template('index.html', err=err)
+                    session["link"] = finded_link
+                    return redirect(f'/login_link/<link>')
+            elif access_lvl==2:
+                if "auth" in session:
+                    if str(session["user_id"])==finded_link[5]:
+                    # изменение кол-ва переходов по ссылке
+                        change_count_link(con, finded_link[4] + 1, finded_link[0])
+                        return redirect(finded_link[1])
+                    else:
+                        err = "У вас нет доступа к этой ссылке"
+                        return render_template('index.html', err=err)
+                else:
+                    session["link"]=finded_link
+                    return redirect(f'/login_link/<link>')
 
 
 @app.route('/change_link', methods=['GET', 'POST'])
@@ -176,16 +183,14 @@ def change_link():
                 shortname = hashlib.md5(session["finded_link"][2].encode()).hexdigest()[:random.randint(8,12)]
                 short = request.host_url + shortname
                 change_shortname_link(con, shortname, short, link_id)
-                return redirect(f'http://127.0.0.1:5000/profile')
             if "change_access_lvl" in request.form:
                 access_lvl=request.form["access_lvl"]
                 change_access_lvl_link(con,access_lvl,link_id)
-                return redirect(f'http://127.0.0.1:5000/profile')
             if "change_nickname" in request.form:
-                shortname=request.form["nickname"]
+                shortname = request.form["nickname"]
                 short = request.host_url + shortname
                 change_shortname_link(con,shortname,short,link_id)
-                return redirect(f'http://127.0.0.1:5000/profile')
+            return redirect(f'http://127.0.0.1:5000/profile')
         return render_template("change_link.html")
     else:
         return redirect(f'http://127.0.0.1:5000/login')

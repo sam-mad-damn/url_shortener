@@ -75,6 +75,11 @@ def find_link_by_short(connection, short, user_id):
 def find_link_by_shortname(connection, short):
      return connection.cursor().execute('''SELECT * FROM links WHERE shortname=? ''',
                                           ([short,])).fetchone()
+
+
+def find_link_by_long(connection, long, user_id):
+    return connection.cursor().execute('''SELECT * FROM links WHERE long=? AND user_id=? ''',
+                                       ([long,user_id, ])).fetchone()
 #функция поиска ссылки
 def find_link_by_id(connection, link_id):
      return connection.cursor().execute('''SELECT * FROM links WHERE id=?''',
